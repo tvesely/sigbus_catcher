@@ -1,7 +1,25 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+
 
 char* EFLAGS[] = { "CF", "1", "PF", "3", "AF", "5", "ZF", "SF", "TF", "IF", "DF", "OF", "IOPL", "IOPL", "NT", "15", "RF", "VM", "AC" };
+
+siginfo_t saved_siginfo;
+extern void emulate_FileRepConnClient_CloseConnection(int i);
+
+void SigHandler( int signo, siginfo_t *si, void *context )
+{
+  int PID = getpid();
+  saved_siginfo = *si;
+  switch( signo )
+  {
+    case SIGSEGV:
+    case SIGBUS:
+      signal(signo, SIG_DFL);
+      kill(PID, signo);
+  }
+}
 
 void toggleac()
 {
@@ -36,10 +54,17 @@ int printeflags()
   return eflags;
 }
 
-extern void emulate_FileRepConnClient_CloseConnection(int i);
 
 int main()
 {
+  /* Set up a signal handler to save all the information about this segfault */
+  struct sigaction SA;
+  SA.sa_flags |= SA_SIGINFO;
+  SA.sa_sigaction = SigHandler;
+
+  sigaction( SIGSEGV , &SA, NULL );
+  sigaction( SIGBUS , &SA, NULL );
+
   for (;;) {
     //printeflags();
     //unsetac();
