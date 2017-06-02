@@ -67,13 +67,9 @@ int main()
 
   for (;;) {
     //printeflags();
-    //unsetac();
-
-    //printeflags();
     emulate_FileRepConnClient_CloseConnection(0);
 
 
-    //printeflags();
   /* Set or unset AC by uncommenting/commenting this line */
     toggleac();
     //printeflags();
